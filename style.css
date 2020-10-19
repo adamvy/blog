@@ -68,13 +68,11 @@ body {
 }
 
 #postamble {
-    float: right;
     padding: 12px;
     font-size: 16px;
 }
 
 #preamble {
-    float: right;
     padding: 12px;
     font-size: 16px;
 }

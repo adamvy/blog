@@ -1,0 +1,151 @@
+#+TITLE: Org mode for Blogging?
+
+Org mode is probably my preferred markup language.  It's very easy to
+type ala markdown, but it has a much longer tail of features for doing
+more complex things.  It's built in to emacs, my preferred text
+editor, which has its perks but can also make it more difficult to
+automate from a UNIX/batch processing perspective.
+
+This blog is written as a series of org documents, and some custom
+scripting and styling pulls it all together and deploys it to my blog
+host.
+
+In this entry we'll go over how its all put together.
+
+* Version Control
+
+  First off the blog it all checked in to [[https://git-scm.com/][a git]] repostiory.  Makes it
+  easy to track changes and more importantly, harder to automatically
+  delete everything.
+
+* Static Generation
+
+  Blogs do not typically have a lot of static content.  They tend to
+  be long form articles that do not change much.  This has a few
+  advantages, if we can render our blogs as entirely static content,
+  then we can deploy on low powered hosts, they can cache well by the
+  browser or in a CDN.
+
+  The key is to generate the HTML first, locally, from our source
+  content and then deploy generated content later.
+
+* Requirements
+
+  A few different pieces of software are needed to put this together.
+
+  - Emacs: Can't process org without emacs.  But you have this
+    installed already don't you?
+
+  - org-mode: A recent version of org-mode is preferred, upstream
+    emacs bundles org-mode or you can install the latest version from
+    [[https://orgmode.org/elpa.html][orgmode.org]]
+
+  - htmlize: Sometimes publishing source code blocks requires the
+    [[https://github.com/hniksic/emacs-htmlize][htmlize package.]]  Can be installed manually from their github or
+    from MELPA
+
+* Rendering
+
+  Rendering is done with emacs and Org mode's publishing support.  To
+  facilitate automation, the necesary config and commands are a top
+  level file named render.el.
+
+  Typically org-mode publishing is done by setting the appropriate
+  variables via emacs customization or in the .emacs startup script.
+  I prefer to have all my configuration self contained in the project
+  repository where things like deployment can be triggered by scripts
+  or crong jobs, and the project can be moved across machines as a
+  unit.
+
+  First we set up an emacs lisp script that will render the blog posts
+  to html.
+
+#+NAME: render.el
+#+BEGIN_SRC elisp
+  (package-initialize)
+
+  (require 'org)
+  (require 'htmlize)
+
+  (let ((org-html-postamble-format '(("en" "<p class=\"updated\">Last updated: %C</p>")))
+        (org-html-preamble-format '(("en" "<h4>Software Engineering Periodically</h4><a href=\"index.html\">Index</a>")))
+        (org-publish-project-alist `(("blog"
+                                      :base-directory ,(concat default-directory "/blog")
+                                      :publishing-directory ,(concat default-directory ".publish")
+                                      :publishing-function org-html-publish-to-html
+                                      :html-preamble t
+                                      :html-postamble t
+                                      :html-head-include-default-style nil
+                                      :html-head-include-scripts nil
+                                      :with-toc nil
+                                      :section-numbers nil
+                                      :html-head "<link rel=\"stylesheet\" href=\"style.css\">"
+                                      :auto-sitemap t
+                                      :sitemap-title "Blog Posts"
+                                      :sitemap-sort-files 'anti-chronologically
+                                      :sitemap-filename "index.org"
+                                      )))
+        (org-html-doctype "html5"))
+    (org-publish-all t))
+#+END_SRC
+
+  With this script in place we can render the blog using the command
+  src_sh[:exports code]{emacs --batch -l render.el}.
+
+  All rendering is done to a temporary staging directory named
+  ".publish" in the root of the repository.  We fill this in with a
+  few addditional files such as the stylesheet and font files and then
+  we can deploy it to our host.
+
+* Deployment
+
+  Fun fact about SSH, you can use it in pipelines and stream the
+  output of a local/remote command to a remote/local command.  This
+  plus GNU tar make it easy to implement a quick and dirty rsync link
+  command.  While rsync is probably the "right" choice, using classic
+  tar seems to have a certain charm, and its my blog so I'll do
+  what I want.
+
+  #+NAME: Deployment command
+  #+BEGIN_SRC sh
+  tar cz -C .publish . | ssh blog.vany.ca tar xvz -C /var/www/html
+  #+END_SRC
+
+* Automating
+
+  These steps are all collected into a classic Makefile, which can be
+  triggered to render and publish the blog.
+
+  #+BEGIN_SRC make
+# Use a single shell rather than forking a shell per recipie line
+# Can be error prone but is way more efficient.
+.ONESHELL:
+
+HOST = blog.vany.ca
+FONTS = $(wildcard fonts/*.woff2)
+
+all: render
+
+.PHONY: render
+render: $(FONTS_WOFF2) style.css
+	emacs --batch -l render.el
+	tar c $^ | tar xv -C .publish
+
+
+.PHONY: deploy
+deploy: render
+	tar cz -C .publish . | ssh $(HOST) tar xvz -C /var/www/html
+
+.PHONY: clean
+clean:
+	rm -rf .publish
+  #+END_SRC
+
+* Next Steps
+
+  With a days work this makes a pretty decent blogging platform, but
+  it's missing a few key features from actual blogging software.
+
+  - Next/previous post links
+
+  - Index points to latest post rather than just an index

@@ -20,7 +20,7 @@ In this article we'll go over how it operates.
 
 * Static Generation
 
-  Blogs do not typically have a lot of static content.  They tend to
+  Blogs do not typically have a lot of dynamic content.  They tend to
   be long form articles that do not change much.  This has a few
   advantages, if we can render our blogs as entirely static content,
   then we can deploy on low powered hosts, they can cache well by the
@@ -67,8 +67,14 @@ In this article we'll go over how it operates.
   (require 'org)
   (require 'htmlize)
 
+  (defun publish-sitemap (title list)
+    (concat
+     "#+TITLE: " title "\n"
+     "#+OPTIONS: html-preamble:nil html-postamble:nil\n\n"
+    (org-list-to-org list)))
+
   (let ((org-html-postamble-format '(("en" "<p class=\"updated\">Last updated: %C</p>")))
-        (org-html-preamble-format '(("en" "<h4>Software Engineering Periodically</h4><a href=\"index.html\">Index</a>")))
+        (org-html-preamble-format '(("en" "<h4>Software Engineering Periodical</h4><a href=\"index.html\">Index</a>")))
         (org-publish-project-alist `(("blog"
                                       :base-directory ,(concat default-directory "/blog")
                                       :publishing-directory ,(concat default-directory ".publish")
@@ -81,9 +87,10 @@ In this article we'll go over how it operates.
                                       :section-numbers nil
                                       :html-head "<link rel=\"stylesheet\" href=\"style.css\">"
                                       :auto-sitemap t
-                                      :sitemap-title "Blog Posts"
+                                      :sitemap-title "Software Engineering Periodical"
                                       :sitemap-sort-files 'anti-chronologically
                                       :sitemap-filename "index.org"
+                                      :sitemap-function publish-sitemap
                                       )))
         (org-html-doctype "html5"))
     (org-publish-all t))

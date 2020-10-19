@@ -1,0 +1,36 @@
+* Gradle and Maven are Complex
+* Language Package Managers are bad
+** They make it near zero friction to pull in dependencies, resulting in huge applications.
+* The android build process is actually fairly simple
+** Straightforward process
+   Manifest.xml + Images -> aapt
+   Javac -> Dex
+   jar
+   jarsigner
+   done!
+** APKs are just JARs with some extras
+*** Can use standard JAR signer
+*** Can include native libraries
+* Stupid android bits
+** "Compiled resources"
+*** Lots of complication and code for minimal space savings.   Compiled XML vs raw XML
+    Is it really worth it?  Code size of aapt2 program
+*** Resource IDs vs filenames.
+    Is it really worth it?
+* A simple Makefile for a java based hello world
+* Native code and NDK
+** Building our own toolchain
+*** Binutils + GCC
+    Look now we can add simple shared libraries all ready!
+*** Standard C Library
+    Is it theoretically possible to use glibc for most standard
+    library functions?  Probably not, the installed C library (bionic)
+    is the standard interface to the kernel.
+
+    Glibc is a bitch to build, but if we have it built we could
+    theoretically statically link parts of it for things like "strcmp"
+    and other utility functions.  Probably can't use it for syscalls
+    however.
+* Debian on remarkable
+* Debian on rk3328-roc-cc
+* org-mode based blog

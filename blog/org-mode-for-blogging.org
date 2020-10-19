@@ -1,20 +1,20 @@
 #+TITLE: Org mode for Blogging?
 
 Org mode is probably my preferred markup language.  It's very easy to
-type ala markdown, but it has a much longer tail of features for doing
-more complex things.  It's built in to emacs, my preferred text
+type like markdown, but it has a much longer tail of features for
+doing more complex things.  It's built in to emacs, my preferred text
 editor, which has its perks but can also make it more difficult to
 automate from a UNIX/batch processing perspective.
 
 This blog is written as a series of org documents, and some custom
-scripting and styling pulls it all together and deploys it to my blog
-host.
+scripting and styling pulls it all together and makes publishing new
+posts a breeze.
 
-In this entry we'll go over how its all put together.
+In this article we'll go over how it operates.
 
 * Version Control
 
-  First off the blog it all checked in to [[https://git-scm.com/][a git]] repostiory.  Makes it
+  First off the blog it all checked in to a [[https://github.com/adamvy/blog][git repository]].  This makes it
   easy to track changes and more importantly, harder to automatically
   delete everything.
 

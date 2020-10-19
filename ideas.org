@@ -1,7 +1,14 @@
-* Gradle and Maven are Complex
+* Gradle and Maven are Complex and unncessary
 * Language Package Managers are bad
-** They make it near zero friction to pull in dependencies, resulting in huge applications.
+  They make it near zero friction to pull in dependencies, resulting in huge applications.
+  The infamous "leftpad" debacle.
 * The android build process is actually fairly simple
+  But the tools suck.
+
+  They are not well suited for scripting/pipelining.  Every tool seems
+  to do its own apk packing rather than being orthogonal for things
+  like xml compiling vs resource stripping vs signing.
+
 ** Straightforward process
    Manifest.xml + Images -> aapt
    Javac -> Dex
@@ -17,6 +24,11 @@
     Is it really worth it?  Code size of aapt2 program
 *** Resource IDs vs filenames.
     Is it really worth it?
+
+    Really feels like a bunch of decision were made because that's how
+    we've always done "resource constrainted" software, even though
+    they're not resourced constrained devices at all.
+
 * A simple Makefile for a java based hello world
 * Native code and NDK
 ** Building our own toolchain
